@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "546607204349",
+    "project_id": "rb-chat-5b431",
+    "storage_bucket": "rb-chat-5b431.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546607204349:android:39a1dc9ead1a3523a23b94",
+        "android_client_info": {
+          "package_name": "com.example.rbchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546607204349-8spnumu9s8e6sa78l9ul01pet4dbm7jq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfoO9eX388SnciUlJO-SHxrIluEEREhTA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546607204349-8spnumu9s8e6sa78l9ul01pet4dbm7jq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

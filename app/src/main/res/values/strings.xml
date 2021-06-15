@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">RB Chat</string>
+    <string name="APP_KEY">bf134596-7564-408e-b2ff-3fbbe1ac2515</string>
+    <string name="APP_SECRET">420ObPAnykyU6tPO/vQQUQ==</string>
+    <string name="ENVIRONMENT">clientapi.sinch.com</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
