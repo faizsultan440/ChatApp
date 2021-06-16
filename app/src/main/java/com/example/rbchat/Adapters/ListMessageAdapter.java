@@ -126,7 +126,7 @@ public class ListMessageAdapter extends BaseAdapter {
 
         boolean selected=false;
         ConstraintLayout full;
-        ImageView image,feeling;
+        ImageView image,feeling,msgstatus;
         TextView msgTime,message;
         RelativeLayout feelinglayout;
         ConstraintLayout linearlayout3;
@@ -141,6 +141,7 @@ msgTime=(TextView) view.findViewById(R.id.msgTime);
 message=(TextView)view.findViewById(R.id.message);
 linearlayout3=(ConstraintLayout)view.findViewById(R.id.linearLayout3);
 //feelinglayout=( RelativeLayout ) view.findViewById(R.id.feelinglayout);
+msgstatus=(ImageView) view.findViewById(R.id.msgStatus);
 
         }
     }
@@ -225,6 +226,14 @@ linearlayout3=(ConstraintLayout)view.findViewById(R.id.linearLayout3);
                                 .into(viewHolder.image);
                     }else
                     viewHolder.message.setText(message.getMessage());
+
+try {
+    if (message.getStatus().equals("seen")) {
+        viewHolder.msgstatus.setImageResource(R.drawable.ic_double_check);
+
+    }
+}catch (Exception e){e.printStackTrace();}
+
 
 
                     if(message.getFeeling() >= 0)

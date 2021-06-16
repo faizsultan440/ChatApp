@@ -9,8 +9,6 @@
     tools:context=".Activities.ChatActivity">
 
 
-
-
     <!--    <androidx.appcompat.widget.Toolbar-->
     <!--        android:id="@+id/toolbar"-->
     <!--        android:layout_width="match_parent"-->
@@ -37,152 +35,151 @@
         app:layout_constraintTop_toTopOf="parent">
 
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/selecttoolbar"
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:layout_weight="1"
-        android:background="?attr/colorPrimary"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-
-        <ImageView
-            android:id="@+id/chatactivitydeleteicon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="30dp"
-            android:foregroundGravity="center_vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-
-            app:srcCompat="@drawable/ic_delete"
-            app:tint="@color/white" />
-
-        <ImageView
-            android:id="@+id/selectback"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_left_arrow"
-            app:tint="@color/white" />
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="?attr/colorPrimary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/profileimage"
-            android:layout_width="60dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/selecttoolbar"
+            android:layout_width="match_parent"
             android:layout_height="45dp"
-            android:layout_marginStart="4dp"
-            android:padding="3dp"
-            android:src="@drawable/ic_avatar"
-            app:civ_border_color="#FF000000"
-            app:civ_border_width="1dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/chatdetailback"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0" />
-
-        <RelativeLayout
-            android:id="@+id/relativeLayout3"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            app:layout_constraintStart_toEndOf="@+id/profileimage">
-
-
-            <TextView
-                android:id="@+id/chatdetailname"
-                android:layout_width="wrap_content"
-
-
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:gravity="center"
-                android:text="Name"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/chatdetailactivestatus"
-
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/chatdetailname"
-                android:layout_marginLeft="5dp"
-                android:text="of"
-                android:textColor="@color/white"
-                android:visibility="visible" />
-
-
-        </RelativeLayout>
-
-        <ImageView
-            android:id="@+id/chatdetailcallicon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/chatdetailvideocallicon"
-            app:layout_constraintTop_toTopOf="parent"
-
-            app:srcCompat="@drawable/ic_phone"
-            app:tint="@color/white" />
-
-        <ImageView
-            android:id="@+id/chatdetailvideocallicon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/chatdetailmenu"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_video_call"
-            app:tint="@color/white" />
-
-        <ImageView
-            android:id="@+id/chatdetailmenu"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_weight="1"
+            android:background="?attr/colorPrimary"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_menu"
-            app:tint="@color/white" />
-
-        <ImageView
-            android:id="@+id/chatdetailback"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_left_arrow"
-            app:tint="@color/white" />
+            app:layout_constraintTop_toTopOf="parent">
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <ImageView
+                android:id="@+id/chatactivitydeleteicon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="30dp"
+                android:foregroundGravity="center_vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+
+                app:srcCompat="@drawable/ic_delete"
+                app:tint="@color/white" />
+
+            <ImageView
+                android:id="@+id/selectback"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_left_arrow"
+                app:tint="@color/white" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profileimage"
+                android:layout_width="60dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="4dp"
+                android:padding="3dp"
+                android:src="@drawable/ic_avatar"
+                app:civ_border_color="#FF000000"
+                app:civ_border_width="1dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/chatdetailback"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <RelativeLayout
+                android:id="@+id/relativeLayout3"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                app:layout_constraintStart_toEndOf="@+id/profileimage">
+
+
+                <TextView
+                    android:id="@+id/chatdetailname"
+                    android:layout_width="wrap_content"
+
+
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:gravity="center"
+                    android:text="Name"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/chatdetailactivestatus"
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/chatdetailname"
+                    android:layout_marginLeft="5dp"
+                    android:text="of"
+                    android:textColor="@color/white"
+                    android:visibility="visible" />
+
+
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/chatdetailcallicon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/chatdetailvideocallicon"
+                app:layout_constraintTop_toTopOf="parent"
+
+                app:srcCompat="@drawable/ic_phone"
+                app:tint="@color/white" />
+
+            <ImageView
+                android:id="@+id/chatdetailvideocallicon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/chatdetailmenu"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_video_call"
+                app:tint="@color/white" />
+
+            <ImageView
+                android:id="@+id/chatdetailmenu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_menu"
+                app:tint="@color/white" />
+
+            <ImageView
+                android:id="@+id/chatdetailback"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_left_arrow"
+                app:tint="@color/white" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -190,49 +187,102 @@
 
     <!--    </androidx.appcompat.widget.Toolbar>-->
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="@+id/relative"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+    <!--    <LinearLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/relative"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/toolbar">-->
 
-<!--        <androidx.core.widget.NestedScrollView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:id="@+id/nestedscrollview"-->
-<!--            android:background="@drawable/chats_background"-->
-<!--            >-->
+    <!--        <androidx.core.widget.NestedScrollView-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:id="@+id/nestedscrollview"-->
+    <!--            android:background="@drawable/chats_background"-->
+    <!--            >-->
 
-<!--            <androidx.recyclerview.widget.RecyclerView-->
-<!--                android:id="@+id/recyclerView"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content">-->
-<!--                -->
-<!--            </androidx.recyclerview.widget.RecyclerView>-->
+    <!--            <androidx.recyclerview.widget.RecyclerView-->
+    <!--                android:id="@+id/recyclerView"-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="wrap_content">-->
+    <!--                -->
+    <!--            </androidx.recyclerview.widget.RecyclerView>-->
 
-        <ListView
-            android:id="@+id/listview"
+
+<!--    <androidx.core.widget.NestedScrollView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:id="@+id/scrollView"-->
+<!--        android:fillViewport="true"-->
+
+<!--        app:layout_constraintBottom_toTopOf="@+id/cardView"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/toolbar">-->
+
+
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="true">
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/cardView"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar"
+            >
+
+            <ListView
+                android:id="@+id/listview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+android:nestedScrollingEnabled="true">
+
+            </ListView>
+
+
+<!--            <TextView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="50dp"-->
+<!--                android:id="@+id/unraedtextview"-->
+<!--                android:background="@color/white"-->
+<!--                android:gravity="center_horizontal"-->
+<!--                android:text=" Unread Messages "-->
+<!--                android:textSize="15dp"-->
+
+
+<!--                />-->
+
+
+<!--            <ListView-->
+<!--                android:id="@+id/listview2"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="300dp"-->
+<!--                android:nestedScrollingEnabled="true"-->
+<!--                >-->
+<!--                -->
+<!--            </ListView>-->
+
+
+        </LinearLayout>
+
+
+<!--    </androidx.core.widget.NestedScrollView>-->
 
 
 
 
-        </ListView>
 
 
-
-
-    </LinearLayout>
+    <!--    </LinearLayout>-->
 
     <ImageView
+        android:id="@+id/dummyimage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
         android:background="@drawable/select_drawable"
-        android:id="@+id/dummyimage"/>
-
+        android:visibility="gone" />
 
 
     <RelativeLayout

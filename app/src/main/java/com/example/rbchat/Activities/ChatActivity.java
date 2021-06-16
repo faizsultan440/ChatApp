@@ -76,7 +76,7 @@ public class ChatActivity extends AppCompatActivity {
 
    public ActivityChatBinding binding;
     MessageAdapter adapter;
-    ListMessageAdapter listadapter;
+    ListMessageAdapter listadapter,list2adapter;
     ArrayList<Message> messages;
     String senderRoom , receiverRoom;
     Message message;
@@ -112,7 +112,7 @@ public class ChatActivity extends AppCompatActivity {
 
         senderUid = FirebaseAuth.getInstance().getUid();
 
-  //  ViewCompat.setNestedScrollingEnabled(binding.recyclerView, false);
+//  ViewCompat.setNestedScrollingEnabled(binding.listview, false);
 
 
 
@@ -172,7 +172,8 @@ public class ChatActivity extends AppCompatActivity {
         listadapter = new ListMessageAdapter(this, messages, senderRoom, receiverRoom,binding);
         binding.listview.setAdapter(listadapter);
 
-
+       list2adapter = new ListMessageAdapter(this, messages, senderRoom, receiverRoom, binding);
+//        binding.listview2.setAdapter(list2adapter);
 
 
 
@@ -486,6 +487,12 @@ Message message= (Message) listadapter.getItem(position);
                 });
 
 
+                binding.listview.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        binding.listview.smoothScrollToPosition(listadapter.getCount()-1);
+                    }
+                });
 
             }
         });
@@ -599,19 +606,11 @@ Message message= (Message) listadapter.getItem(position);
 
                                     Log.e("seen","not null");
 
-                                    if(message.getStatus()!="seen" || message.getSenderId()==FirebaseAuth.getInstance().getUid()){
+                                    if(!message.getStatus().equals("seen") && !message.getSenderId().equals(FirebaseAuth.getInstance().getUid())){
                                 Log.e("seen",message.getStatus());
                                 message.setStatus("seen");
 
-                                database.getReference().child("chats")
-                                        .child(senderRoom)
-                                        .child("messages")
-                                        .child(message.getMessageId()).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Log.e("seen",message.getStatus());
-                                    }
-                                });
+
                                 database.getReference().child("chats")
                                         .child(receiverRoom)
                                         .child("messages")
@@ -641,7 +640,7 @@ Message message= (Message) listadapter.getItem(position);
 
 
                         listadapter.notifyDataSetChanged();
-
+                        list2adapter.notifyDataSetChanged();
 
 
 
