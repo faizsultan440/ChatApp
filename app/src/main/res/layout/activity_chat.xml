@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/chats_background"
     android:scrollbarSize="4dp"
+    android:id="@+id/constrants"
     tools:context=".Activities.ChatActivity">
 
 
@@ -361,7 +362,7 @@ android:nestedScrollingEnabled="true">
                     android:orientation="vertical">
 
                     <ImageButton
-                        android:id="@+id/contact_img_btn"
+                        android:id="@+id/contact"
                         android:layout_width="70dp"
                         android:layout_height="70dp"
                         android:background="@drawable/contact"
