@@ -8,12 +8,15 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -32,13 +35,16 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -47,10 +53,13 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.disklrucache.DiskLruCache;
 import com.example.rbchat.Adapters.ListMessageAdapter;
 import com.example.rbchat.Adapters.MessageAdapter;
+
 import com.example.rbchat.Model.Message;
 import com.example.rbchat.Model.User;
 import com.example.rbchat.R;
 import com.example.rbchat.databinding.ActivityChatBinding;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -84,7 +93,7 @@ public class ChatActivity extends AppCompatActivity {
     FirebaseDatabase database;
     FirebaseStorage storage;
     FirebaseAuth auth;
-
+    FusedLocationProviderClient client;
     ProgressDialog dialog;
 
     String senderUid;
@@ -94,6 +103,10 @@ public class ChatActivity extends AppCompatActivity {
 
     private static final int Permission_code=1001;
      private static final int  Request_code=1000;
+    private static final int conatact_pick_code = 2;
+    private static final int camera_image_code = 3;
+    private static final int video_pick_code = 4;
+    private boolean imageFlag = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,7 +124,7 @@ public class ChatActivity extends AppCompatActivity {
         User user=(User) getIntent().getSerializableExtra("user");
         String name =  user.getuName();
         receiverUid = user.getUid();
-
+        client = LocationServices.getFusedLocationProviderClient(this);
         senderUid = FirebaseAuth.getInstance().getUid();
 
 //  ViewCompat.setNestedScrollingEnabled(binding.listview, false);
@@ -175,6 +188,9 @@ public class ChatActivity extends AppCompatActivity {
         binding.listview.setAdapter(listadapter);
 
        list2adapter = new ListMessageAdapter(this, messages, senderRoom, receiverRoom, binding);
+//        binding.listview2.setAdapter(list2adapter);
+
+
 
 
         auth = FirebaseAuth.getInstance();
@@ -226,40 +242,41 @@ public class ChatActivity extends AppCompatActivity {
 
             }
 
+
+
+
         });
-
-
-
-//        binding.listview.setOnTouchListener(new ListView.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                int action = event.getAction();
-//                switch (action) {
-//                    case MotionEvent.ACTION_DOWN:
-//                        // Disallow ScrollView to intercept touch events.
-//                        v.getParent().requestDisallowInterceptTouchEvent(true);
-//                        break;
-//
-//                    case MotionEvent.ACTION_UP:
-//                        // Allow ScrollView to intercept touch events.
-//                        v.getParent().requestDisallowInterceptTouchEvent(false);
-//                        break;
-//                }
-//
-//                // Handle ListView touch events.
-//                v.onTouchEvent(event);
-//                return true;
-//            }
-//        });
-
-
-
-
 
 
 binding.listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        Message message= (Message) parent.getAdapter().getItem(position);
+
+        Log.e("itemclick",message.getMessage());
+
+
+        if(message.getMessage()=="photo") {
+            Intent intent = new Intent(ChatActivity.this, Fullimages.class);
+            intent.putExtra("url", message.getImageUrl());
+            startActivity(intent);
+        }else if(message.getMessage().equals("video")){
+
+            Intent intent=new Intent(ChatActivity.this, Videoview.class);
+            intent.putExtra("url",message.getImageUrl());
+            startActivity(intent);
+
+        }else{
+            Intent intent=new Intent(ChatActivity.this,ShowLocation.class);
+            intent.putExtra("lat",message.getLatitude());
+            intent.putExtra("long",message.getLongitude());
+            startActivity(intent);
+
+        }
+
+
+
 
     }
 });
@@ -532,10 +549,7 @@ Message message= (Message) listadapter.getItem(position);
 
         getSupportActionBar().setTitle(name);
         getSupportActionBar().hide();
-            binding.Document.setOnClickListener(v -> {
 
-                    getmediafrommobile();
-});
             binding.gallery.setOnClickListener(v -> {
 
                     if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
@@ -545,6 +559,7 @@ Message message= (Message) listadapter.getItem(position);
                             requestPermissions(Permission, Permission_code);
                         } else {
                             PickImeageFromGallary();
+                            binding.relative.setVisibility(View.INVISIBLE);
                         }
                     }
 });
@@ -560,6 +575,54 @@ Message message= (Message) listadapter.getItem(position);
                 }
 
             }
+        });
+        binding.video.setOnClickListener(v -> {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                    String[] Permission = {Manifest.permission.READ_EXTERNAL_STORAGE};
+                    requestPermissions(Permission, Permission_code);
+                } else {
+                    PickVideoFromGallary();
+                    binding.relative.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+        binding.Document.setOnClickListener(v -> {
+
+            getDocuments();
+            binding.relative.setVisibility(View.INVISIBLE);
+        });
+
+
+
+        binding.contact.setOnClickListener(v -> {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED) {
+                    String[] Permission = {Manifest.permission.READ_CONTACTS};
+                    requestPermissions(Permission, Permission_code);
+                } else {
+                    openContacts();
+                    binding.relative.setVisibility(View.INVISIBLE);
+                }
+
+            }
+        });
+        binding.location.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+
+                    String[] Permission = {Manifest.permission.ACCESS_FINE_LOCATION};
+                    requestPermissions(Permission, Permission_code);
+                } else {
+                    getmylocation();
+                    binding.relative.setVisibility(View.INVISIBLE);
+                }
+
+            }
+
+
         });
 
 
@@ -731,12 +794,13 @@ Message message= (Message) listadapter.getItem(position);
 
     private void PickImeageFromGallary() {
         Intent intent=new Intent(Intent.ACTION_PICK);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
         intent.setType("image/*");
         startActivityForResult(intent,Request_code);
 
     }
 
-    public void getmediafrommobile() {
+    public void getDocuments() {
         Intent intent=new Intent();
         intent.setType("pdf/*");
         intent.setType("doc/*");
@@ -744,6 +808,89 @@ Message message= (Message) listadapter.getItem(position);
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent,Request_code);
     }
+    private void openContacts() {
+
+        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        startActivityForResult(intent, conatact_pick_code);
+
+
+    }
+
+    private void getmylocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Task<Location> task = client.getLastLocation();
+        task.addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+
+                double longitude=location.getLongitude();
+                double latitude = location.getLatitude();
+
+
+                String messageTxt = binding.messageBox.getText().toString();
+                Date date = new Date();
+                Message message = new Message(messageTxt, senderUid, date.getTime());
+
+                message.setMessage(longitude+","+latitude);
+                message.setStatus("sent");
+                binding.messageBox.setText("");
+                message.setLatitude(latitude);
+                message.setLongitude(longitude);
+                String randomKey = database.getReference().push().getKey();
+
+                HashMap<String, Object> lastMsgObj = new HashMap<>();
+                lastMsgObj.put("lastMessage", message.getMessage());
+                lastMsgObj.put("lastMessageTime", date.getTime());
+
+                database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+                database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+
+                database.getReference().child("chats")
+                        .child(senderRoom)
+                        .child("messages")
+                        .child(randomKey)
+                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        database.getReference().child("chats")
+                                .child(receiverRoom)
+                                .child("messages")
+                                .child(randomKey)
+                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                            }
+                        });
+                    }
+                });
+
+
+
+
+                //LatLng latLng=new LatLng(location.getLatitude(),location.getLongitude());
+
+            }
+        });
+
+    }
+    private  void PickVideoFromGallary() {
+        Intent intent=new Intent(Intent.ACTION_PICK);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
+        intent.setType("video/*");
+        startActivityForResult(intent,video_pick_code);
+        imageFlag=false;
+
+    }
+
 
     public Uri getImageUri(Context inContext, Bitmap inImage) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -818,11 +965,79 @@ Message message= (Message) listadapter.getItem(position);
                             }
                         }
                     });
-                }else{Log.e("chatactivity","data not found");}
+                }
+
             }
-            else{Log.e("chatactivity","data not found");}
+
         }
-        else if (requestCode==2){
+        if(requestCode == video_pick_code) {
+            if (data != null) {
+
+
+                //binding.iamges.se(fianlphoto);
+                if (data.getData() != null){
+                    Uri selectedImage = data.getData();
+                    Calendar calendar = Calendar.getInstance();
+                    StorageReference reference = storage.getReference().child("chats").child(calendar.getTimeInMillis() + "");
+                    dialog.show();
+                    reference.putFile(selectedImage).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            dialog.dismiss();
+                            if (task.isSuccessful()){
+                                reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        String filepath = uri.toString();
+
+                                        String messageTxt = binding.messageBox.getText().toString();
+                                        Date date = new Date();
+                                        Message message = new Message(messageTxt, senderUid, date.getTime());
+                                        message.setMessage("video");
+                                        message.setStatus("sent");
+                                        message.setImageUrl(filepath);
+                                        binding.messageBox.setText("");
+
+                                        String randomKey = database.getReference().push().getKey();
+
+                                        HashMap<String, Object> lastMsgObj = new HashMap<>();
+                                        lastMsgObj.put("lastMessage", message.getMessage());
+                                        lastMsgObj.put("lastMessageTime", date.getTime());
+
+                                        database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+                                        database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+
+                                        database.getReference().child("chats")
+                                                .child(senderRoom)
+                                                .child("messages")
+                                                .child(randomKey)
+                                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                database.getReference().child("chats")
+                                                        .child(receiverRoom)
+                                                        .child("messages")
+                                                        .child(randomKey)
+                                                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+
+            }
+
+        }
+
+
+        else if (requestCode==camera_image_code){
             try {
                 Bitmap finalphoto = (Bitmap) data.getExtras().get("data");
                 Uri uri= getImageUri(getApplicationContext(),finalphoto);
@@ -883,25 +1098,100 @@ Message message= (Message) listadapter.getItem(position);
                 }
             });
 
-
             }
             catch(Exception e){
                 Log.e("ChatActivity",e.getMessage());
             }
 
         }
+        else if (requestCode == conatact_pick_code) {
+            Cursor cursor1;
+            Cursor cursor2;
+            String contactId=null,contactName=null,contactThumbnail=null,idResults=null,contactNumber=null,number=null;
+            Uri uri = data.getData();
+            cursor1 = getContentResolver().query(uri, null, null, null, null);
+            if (cursor1.moveToFirst()) {
+                contactId = cursor1.getString(cursor1.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
+                contactName = cursor1.getString(cursor1.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
+                contactThumbnail = cursor1.getString(cursor1.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI));
+                idResults = cursor1.getString(cursor1.getColumnIndexOrThrow(ContactsContract.Contacts.HAS_PHONE_NUMBER));
+
+                int idResultHold = Integer.parseInt(idResults);
+                if (idResultHold == 1) {
+
+                    try {
+
+                        cursor2 = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                null,
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + contactId,
+                                null, null);
+                        cursor2.moveToFirst();
+
+                        do {
+                            number = cursor2.getString(cursor2.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            if (contactNumber == null) {
+                                contactNumber=number;
+                            }
+                            else {
+                                contactNumber += "," + number;
+                            }
+
+                        } while (cursor2.moveToNext());
+                        cursor2.close();
+                    }catch (Exception e) {}
+
+                }
+                cursor1.close();
+            }
+            Date date = new Date();
+            String messageTxt=contactName+"\n"+contactNumber;
+            Message message = new Message(messageTxt, senderUid, date.getTime());
+            message.setStatus("sent");
+            String randomKey = database.getReference().push().getKey();
+            message.setMessageId(randomKey);
+            HashMap<String, Object> lastMsgObj = new HashMap<>();
+            lastMsgObj.put("lastMessage", message.getMessage());
+
+            lastMsgObj.put("lastMessageTime", date.getTime());
+
+            database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+            database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+
+            database.getReference().child("chats")
+                    .child(senderRoom)
+                    .child("messages")
+                    .child(randomKey)
+                    .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    database.getReference().child("chats")
+                            .child(receiverRoom)
+                            .child("messages")
+                            .child(randomKey)
+                            .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
 
 
 
+                        }
+                    });
+                }
+            });
 
+        }
 
-
+        else {}
+        //  if (requestCode==video_pick_code)
+        // {
+        //     Uri videouri=data.getData();
+        //     video.setVisibility(View.VISIBLE);
+        //     video.setVideoURI(videouri);
+        //     video.start();
+        //  }
 
     }
-
-
-
-
+    String currentId = FirebaseAuth.getInstance().getUid();
 
     @Override
     protected void onResume() {

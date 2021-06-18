@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CONTACTS,Manifest.permission.WRITE_CONTACTS,Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_PHONE_STATE},1 );
+        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CONTACTS,Manifest.permission.WRITE_CONTACTS,Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_PHONE_STATE,Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.CAMERA,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},1 );
 
 //        if (ContextCompat.checkSelfPermission(this,
 //                android.Manifest.permission.RECORD_AUDIO) !=
@@ -129,7 +129,7 @@ tabLayout.setupWithViewPager(viewPager);
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(requestCode==1 && grantResults[0]==PackageManager.PERMISSION_GRANTED && grantResults[1]==PackageManager.PERMISSION_GRANTED && grantResults[2]==PackageManager.PERMISSION_GRANTED && grantResults[3]==PackageManager.PERMISSION_GRANTED){
+        if(requestCode==1 && grantResults[0]==PackageManager.PERMISSION_GRANTED && grantResults[1]==PackageManager.PERMISSION_GRANTED && grantResults[2]==PackageManager.PERMISSION_GRANTED && grantResults[3]==PackageManager.PERMISSION_GRANTED&& grantResults[4]==PackageManager.PERMISSION_GRANTED&& grantResults[5]==PackageManager.PERMISSION_GRANTED&& grantResults[6]==PackageManager.PERMISSION_GRANTED&& grantResults[7]==PackageManager.PERMISSION_GRANTED){
             Log.e("RB-CHAT","Permissions granted");
         }
         else{
