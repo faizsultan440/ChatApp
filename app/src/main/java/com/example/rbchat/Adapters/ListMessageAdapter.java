@@ -45,6 +45,7 @@ public class ListMessageAdapter extends BaseAdapter {
     public ArrayList<Message> selectedmessage=new ArrayList<>();
     final int ITEM_SENT = 1;
     final int ITEM_RECEIVE = 2;
+    final int ITEM_DETAIL= 3;
     ActivityChatBinding activityChatBinding;
     String senderRoom;
     String receiverRoom;
@@ -80,7 +81,12 @@ public class ListMessageAdapter extends BaseAdapter {
         }else if(type == ITEM_RECEIVE){
             View view = LayoutInflater.from(context).inflate(R.layout.item_recieve,parent, false);
             return view;
-        }else
+        }else if(type==ITEM_DETAIL){
+            View view = LayoutInflater.from(context).inflate(R.layout.item_detail,parent, false);
+            return view;
+
+        }
+        else
             return null;
     }
 
@@ -110,7 +116,11 @@ public class ListMessageAdapter extends BaseAdapter {
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
-        if(FirebaseAuth.getInstance().getUid().equals(message.getSenderId()))
+
+        if("dummy".equals(message.getSenderId())){
+            return ITEM_DETAIL;
+        }
+       else if(FirebaseAuth.getInstance().getUid().equals(message.getSenderId()))
         {
             return ITEM_SENT;
 

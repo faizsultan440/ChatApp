@@ -45,6 +45,9 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0-alpha01'
     implementation 'com.github.mukeshsolanki:android-otpview-pinview:2.1.2'
 
+    //noinspection GradleCompatible
+    implementation 'com.android.support:appcompat-v7:<greater than or equal to 22.1.0>'
+
     implementation platform('com.google.firebase:firebase-bom:26.6.0')
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-auth'

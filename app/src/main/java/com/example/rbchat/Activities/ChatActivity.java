@@ -28,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -89,6 +90,7 @@ public class ChatActivity extends AppCompatActivity {
     String senderUid;
     String receiverUid;
     Uri Image_uri;
+    ValueEventListener showmessagesinlistlistener;
 
     private static final int Permission_code=1001;
      private static final int  Request_code=1000;
@@ -173,9 +175,6 @@ public class ChatActivity extends AppCompatActivity {
         binding.listview.setAdapter(listadapter);
 
        list2adapter = new ListMessageAdapter(this, messages, senderRoom, receiverRoom, binding);
-//        binding.listview2.setAdapter(list2adapter);
-
-
 
 
         auth = FirebaseAuth.getInstance();
@@ -227,22 +226,40 @@ public class ChatActivity extends AppCompatActivity {
 
             }
 
-
-
-
         });
+
+
+
+//        binding.listview.setOnTouchListener(new ListView.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                int action = event.getAction();
+//                switch (action) {
+//                    case MotionEvent.ACTION_DOWN:
+//                        // Disallow ScrollView to intercept touch events.
+//                        v.getParent().requestDisallowInterceptTouchEvent(true);
+//                        break;
+//
+//                    case MotionEvent.ACTION_UP:
+//                        // Allow ScrollView to intercept touch events.
+//                        v.getParent().requestDisallowInterceptTouchEvent(false);
+//                        break;
+//                }
+//
+//                // Handle ListView touch events.
+//                v.onTouchEvent(event);
+//                return true;
+//            }
+//        });
+
+
+
+
 
 
 binding.listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-
-
-
-
-
-
 
     }
 });
@@ -443,8 +460,6 @@ Message message= (Message) listadapter.getItem(position);
                 InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
 
-
-
                 String messageTxt = binding.messageBox.getText().toString();
 
                 Date date = new Date();
@@ -495,6 +510,8 @@ Message message= (Message) listadapter.getItem(position);
                 });
 
             }
+
+
         });
 
 
@@ -587,28 +604,48 @@ Message message= (Message) listadapter.getItem(position);
 //        HashMap<String, Object> statusObj = new HashMap<>();
 //        statusObj.put("status", "seen");
 
-        database.getReference().child("chats")
-                .child(senderRoom)
-                .child("messages")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        messages.clear();
+        showmessagesinlistlistener=new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Date date=new Date();
+                messages.clear();
 
 
-                        for(DataSnapshot snapshot1 : snapshot.getChildren())
-                        {
-                            message = snapshot1.getValue(Message.class);
+                for(DataSnapshot snapshot1 : snapshot.getChildren())
+                {
+                    message = snapshot1.getValue(Message.class);
 
-                            try{
+                    try{
 
-                                if(message.getStatus()!=null){
+                        if(message.getStatus()!=null){
 
-                                    Log.e("seen","not null");
+                            Log.e("seen","not null");
 
-                                    if(!message.getStatus().equals("seen") && !message.getSenderId().equals(FirebaseAuth.getInstance().getUid())){
+                            if(!message.getStatus().equals("seen") && !message.getSenderId().equals(FirebaseAuth.getInstance().getUid())){
+                                Message unreadmessage=new Message("Unread Messages","dummy",date.getTime());
+                                unreadmessage.setStatus("seen");
+                                if(messages.contains(unreadmessage)){
+
+                                    messages.add(unreadmessage);
+                                }else {}
+
+
+
+
+
                                 Log.e("seen",message.getStatus());
                                 message.setStatus("seen");
+
+
+                                database.getReference().child("chats")
+                                        .child(senderRoom)
+                                        .child("messages")
+                                        .child(message.getMessageId()).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Log.e("seen",message.getStatus());
+                                    }
+                                });
 
 
                                 database.getReference().child("chats")
@@ -622,36 +659,41 @@ Message message= (Message) listadapter.getItem(position);
                                 });
 
                             }
-                                }
-
-                        }catch (Exception e){Log.e("seen",e.getMessage());}
-
-                            message.setMessageId(snapshot1.getKey());
-                            messages.add(message);
                         }
 
+                    }catch (Exception e){Log.e("seenexception",e.getMessage());}
+
+                    message.setMessageId(snapshot1.getKey());
+                    messages.add(message);
+                }
 
 
 
 
 
-                     //   adapter.notifyDataSetChanged();
-                   //     binding.recyclerView.scrollToPosition(adapter.getItemCount()-1);
+
+                //   adapter.notifyDataSetChanged();
+                //     binding.recyclerView.scrollToPosition(adapter.getItemCount()-1);
 
 
-                        listadapter.notifyDataSetChanged();
-                        list2adapter.notifyDataSetChanged();
+                listadapter.notifyDataSetChanged();
+              //  list2adapter.notifyDataSetChanged();
 
 
 
 
-                    }
+            }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
-                    }
-                });
+            }
+        };
+
+        database.getReference().child("chats")
+                .child(senderRoom)
+                .child("messages")
+                .addValueEventListener(showmessagesinlistlistener);
 
 
 
@@ -874,13 +916,19 @@ Message message= (Message) listadapter.getItem(position);
     }
 
 
+    @Override
+    protected void onStop() {
+        database.getReference().child("chats")
+                .child(senderRoom)
+                .child("messages").removeEventListener(showmessagesinlistlistener);
 
-
-
+        super.onStop();
+    }
 
     @Override
     protected void onPause() {
         super.onPause();
+
         String currentId = FirebaseAuth.getInstance().getUid();
         try {
             Date date=new Date();
@@ -936,46 +984,6 @@ Message message= (Message) listadapter.getItem(position);
         animator.start();
     }
 
-    private void showfeelinglayout( RelativeLayout view) {
-
-        float radius =Math.max(view.getWidth(),view.getHeight());
-        Animator animator = ViewAnimationUtils.createCircularReveal(view,view.getLeft(),view.getTop(),0,radius*2);
-        animator.setDuration(800);
-        view.setVisibility(view.VISIBLE);
-        animator.start();
-    }
-    private void hidefeelinglayout(RelativeLayout view) {
-
-        try{
-        float initialradius =Math.max(view.getWidth(),view.getHeight());
-        Animator animator = ViewAnimationUtils.createCircularReveal(view,view.getLeft(),view.getTop(),initialradius * 2,0);
-        animator.setDuration(800);
-        animator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                view.setVisibility(view.GONE);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        animator.start();
-    }catch (Exception e){Log.e("Animation",e.getMessage());}
-
-
-    }
 
 
 

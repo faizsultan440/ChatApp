@@ -185,97 +185,32 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-    <!--    </androidx.appcompat.widget.Toolbar>-->
-
-    <!--    <LinearLayout-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="0dp"-->
-    <!--        app:layout_constraintBottom_toBottomOf="@+id/relative"-->
-    <!--        app:layout_constraintTop_toBottomOf="@+id/toolbar">-->
-
-    <!--        <androidx.core.widget.NestedScrollView-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:id="@+id/nestedscrollview"-->
-    <!--            android:background="@drawable/chats_background"-->
-    <!--            >-->
-
-    <!--            <androidx.recyclerview.widget.RecyclerView-->
-    <!--                android:id="@+id/recyclerView"-->
-    <!--                android:layout_width="match_parent"-->
-    <!--                android:layout_height="wrap_content">-->
-    <!--                -->
-    <!--            </androidx.recyclerview.widget.RecyclerView>-->
-
-
-<!--    <androidx.core.widget.NestedScrollView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:id="@+id/scrollView"-->
-<!--        android:fillViewport="true"-->
-
-<!--        app:layout_constraintBottom_toTopOf="@+id/cardView"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/toolbar">-->
-
-
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:orientation="vertical"
+            android:scrollbars="vertical"
+
             app:layout_constraintBottom_toTopOf="@+id/cardView"
             app:layout_constraintEnd_toEndOf="parent"
 
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar"
+
             >
+
 
             <ListView
                 android:id="@+id/listview"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-android:nestedScrollingEnabled="true">
+                android:layout_height="match_parent"
+                android:nestedScrollingEnabled="true"
+                >
 
             </ListView>
 
-
-<!--            <TextView-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="50dp"-->
-<!--                android:id="@+id/unraedtextview"-->
-<!--                android:background="@color/white"-->
-<!--                android:gravity="center_horizontal"-->
-<!--                android:text=" Unread Messages "-->
-<!--                android:textSize="15dp"-->
-
-
-<!--                />-->
-
-
-<!--            <ListView-->
-<!--                android:id="@+id/listview2"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="300dp"-->
-<!--                android:nestedScrollingEnabled="true"-->
-<!--                >-->
-<!--                -->
-<!--            </ListView>-->
-
-
         </LinearLayout>
 
-
-<!--    </androidx.core.widget.NestedScrollView>-->
-
-
-
-
-
-
-    <!--    </LinearLayout>-->
 
     <ImageView
         android:id="@+id/dummyimage"
