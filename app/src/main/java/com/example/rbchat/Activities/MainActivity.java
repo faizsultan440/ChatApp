@@ -139,46 +139,37 @@ tabLayout.setupWithViewPager(viewPager);
         }
     }
 
+
     @Override
-    protected void onResume() {
-        super.onResume();
-        String currentId = FirebaseAuth.getInstance().getUid();
-        try {
+    protected void onStart() {
+        super.onStart();
+        if (currentId != null)
+        {
             database.getReference().child("presence").child(currentId).setValue("Online");
-        }
-        catch(Exception e) {
-            Log.e(this.getClass().getSimpleName()+" OnResume: ",e.getMessage());
         }
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onDestroy() {
         String currentId = FirebaseAuth.getInstance().getUid();
         try {
             Date date=new Date();
             database.getReference().child("presence").child(currentId).setValue(date.getTime()+"");
         }
         catch(Exception e) {
-            Log.e(this.getClass().getSimpleName()+" OnPause: ",e.getMessage());
+            Log.e(this.getClass().getSimpleName()+" Ondestroy: ",e.getMessage());
         }
-
+        super.onDestroy();
     }
 
     @Override
-    protected void onDestroy() {
-
-        String currentId = FirebaseAuth.getInstance().getUid();
-        try {
-            Date date=new Date();
-           database.getReference().child("presence").child(currentId).setValue(date.getTime()+"");
-        }
-        catch(Exception e) {
-           Log.e(this.getClass().getSimpleName()+" Ondestroy: ",e.getMessage());
-        }
-
-        super.onDestroy();
-
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        Date date=new Date();
+        database.getReference().child("presence").child(currentId).setValue(date.getTime()+"");
     }
+
+
+
 
 }

@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,21 +7,8 @@
     android:layout_height="match_parent"
     android:background="@drawable/chats_background"
     android:scrollbarSize="4dp"
-    android:id="@+id/constrants"
     tools:context=".Activities.ChatActivity">
 
-
-    <!--    <androidx.appcompat.widget.Toolbar-->
-    <!--        android:id="@+id/toolbar"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_weight="1"-->
-    <!--        android:background="?attr/colorPrimary"-->
-    <!--        android:minHeight="?attr/actionBarSize"-->
-    <!--        android:theme="?attr/actionBarTheme"-->
-    <!--        app:layout_constraintEnd_toEndOf="parent"-->
-    <!--        app:layout_constraintStart_toStartOf="parent"-->
-    <!--        app:layout_constraintTop_toTopOf="parent">-->
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,11 +17,11 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="?attr/colorPrimary"
-
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -48,7 +36,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-
             <ImageView
                 android:id="@+id/chatactivitydeleteicon"
                 android:layout_width="wrap_content"
@@ -58,7 +45,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-
                 app:srcCompat="@drawable/ic_delete"
                 app:tint="@color/white" />
 
@@ -72,8 +58,9 @@
                 app:srcCompat="@drawable/ic_left_arrow"
                 app:tint="@color/white" />
 
-
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout2"
@@ -85,7 +72,6 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
-
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/profileimage"
@@ -101,6 +87,8 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
 
+
+
             <RelativeLayout
                 android:id="@+id/relativeLayout3"
                 android:layout_width="wrap_content"
@@ -108,12 +96,9 @@
                 android:orientation="vertical"
                 app:layout_constraintStart_toEndOf="@+id/profileimage">
 
-
                 <TextView
                     android:id="@+id/chatdetailname"
                     android:layout_width="wrap_content"
-
-
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:gravity="center"
@@ -124,15 +109,13 @@
 
                 <TextView
                     android:id="@+id/chatdetailactivestatus"
-
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/chatdetailname"
                     android:layout_marginLeft="5dp"
-                    android:text="of"
+                    android:text="Ofline"
                     android:textColor="@color/white"
                     android:visibility="visible" />
-
 
             </RelativeLayout>
 
@@ -144,7 +127,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/chatdetailvideocallicon"
                 app:layout_constraintTop_toTopOf="parent"
-
                 app:srcCompat="@drawable/ic_phone"
                 app:tint="@color/white" />
 
@@ -179,39 +161,62 @@
                 app:srcCompat="@drawable/ic_left_arrow"
                 app:tint="@color/white" />
 
-
         </androidx.constraintlayout.widget.ConstraintLayout>
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- </androidx.appcompat.widget.Toolbar>-->
 
-        <LinearLayout
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/relative"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+        <!-- <androidx.core.widget.NestedScrollView-->
+
+
+        <!-- android:layout_width="match_parent"-->
+
+
+        <!-- android:layout_height="wrap_content"-->
+
+
+        <!-- android:id="@+id/nestedscrollview"-->
+
+
+        <!-- android:background="@drawable/chats_background"-->
+
+
+        <!-- >-->
+
+
+        <!-- <androidx.recyclerview.widget.RecyclerView-->
+
+
+        <!-- android:id="@+id/recyclerView"-->
+
+
+        <!-- android:layout_width="match_parent"-->
+
+
+        <!-- android:layout_height="wrap_content">-->
+
+
+        <!-- -->
+
+
+        <!-- </androidx.recyclerview.widget.RecyclerView>-->
+
+
+        <ListView
+            android:id="@+id/listview"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            android:scrollbars="vertical"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="true"></ListView>
 
-            app:layout_constraintBottom_toTopOf="@+id/cardView"
-            app:layout_constraintEnd_toEndOf="parent"
-
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar"
-
-            >
-
-
-            <ListView
-                android:id="@+id/listview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:nestedScrollingEnabled="true"
-                >
-
-            </ListView>
-
-        </LinearLayout>
-
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/dummyimage"
@@ -225,12 +230,9 @@
         android:id="@+id/relative"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
         android:visibility="invisible"
-
-        app:layout_constraintBottom_toTopOf="@+id/cardView"
+        app:layout_constraintBottom_toTopOf="@+id/messageLayout"
         app:layout_constraintEnd_toEndOf="parent"
-
         app:layout_constraintStart_toStartOf="parent">
 
 
@@ -240,12 +242,14 @@
             android:gravity="center"
             android:orientation="vertical">
 
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#F0EFED"
                 android:orientation="horizontal"
                 android:padding="16dp">
+
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -266,7 +270,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="Audio" />
+
                 </LinearLayout>
+
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -287,7 +293,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="Location" />
+
                 </LinearLayout>
+
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -308,9 +316,11 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="Contact" />
+
                 </LinearLayout>
 
             </LinearLayout>
+
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -318,6 +328,9 @@
                 android:background="#F0EFED"
                 android:orientation="horizontal"
                 android:padding="16dp">
+
+
+                -
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -338,7 +351,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="Gallery" />
+
                 </LinearLayout>
+
+
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -359,7 +375,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="Documents" />
+
                 </LinearLayout>
+
+
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -381,77 +400,148 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="Video" />
+
                 </LinearLayout>
 
             </LinearLayout>
+
         </LinearLayout>
 
     </RelativeLayout>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardView"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginEnd="5dp"
-        android:layout_marginBottom="8dp"
-        app:cardCornerRadius="30dp"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/messageLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/send_btn"
         app:layout_constraintStart_toStartOf="parent">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/message_box"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:ems="10"
-                android:hint="Type a meassage..."
-                android:inputType="textPersonName"
-
-                android:padding="8dp"
-                android:textSize="14sp" />
-
-            <ImageView
-                android:id="@+id/attachment"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginRight="12dp"
-                android:backgroundTint="#858181"
-                app:srcCompat="@drawable/ic_attachment"
-                app:tint="#676765" />
-
-            <ImageView
-                android:id="@+id/camera"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginRight="12dp"
-                android:backgroundTint="#858181"
-                app:srcCompat="@drawable/ic_camera"
-                app:tint="#676765" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="30dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/send_btn"
+            app:layout_constraintStart_toStartOf="parent">
 
 
-    <ImageView
-        android:id="@+id/send_btn"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_marginEnd="5dp"
-        android:background="@drawable/circle_green"
-        android:padding="5dp"
-        app:layout_constraintBottom_toBottomOf="@+id/cardView"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/message_box"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:ems="10"
+                    android:hint="Type a meassage..."
+                    android:inputType="textPersonName"
+                    android:padding="8dp"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/attachment"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginRight="12dp"
+                    android:backgroundTint="#858181"
+                    app:srcCompat="@drawable/ic_attachment"
+                    app:tint="#676765" />
+
+                <ImageView
+                    android:id="@+id/camera"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginRight="12dp"
+                    android:backgroundTint="#858181"
+                    app:srcCompat="@drawable/ic_camera"
+                    app:tint="#676765" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <ImageView
+            android:id="@+id/send_btn"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/circle_green"
+            android:padding="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_send"
+            app:tint="#FFFFFF" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/recording_Layout"
+        android:layout_width="match_parent"
+
+        android:layout_height="58dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/cardView"
-        app:srcCompat="@drawable/ic_send"
-        app:tint="#FFFFFF" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/cancel_recording"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/circle_green"
+            android:padding="4dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_delete" />
+
+        <com.devlomi.record_view.RecordView
+            android:id="@+id/record_View"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:layout_marginEnd="3dp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@id/recording_Layout"
+            app:layout_constraintEnd_toStartOf="@id/record_Btn"
+            app:layout_constraintStart_toEndOf="@id/cancel_recording"
+            app:layout_constraintTop_toTopOf="@id/recording_Layout"
+            app:slide_to_cancel_arrow="@drawable/back_arrow"
+            app:slide_to_cancel_arrow_color="@color/black"
+            app:slide_to_cancel_text="Slide to Cancel" />
+
+        <com.devlomi.record_view.RecordButton
+            android:id="@+id/record_Btn"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center|bottom"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/circle_green"
+            android:padding="5dp"
+            android:scaleType="center"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/recording_Layout"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/mic" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

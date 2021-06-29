@@ -2,55 +2,41 @@ package com.example.rbchat.Activities;
 
 import android.Manifest;
 import android.animation.Animator;
-import android.app.Activity;
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
-import android.content.ContentValues;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.location.Location;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
-import android.widget.HorizontalScrollView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.disklrucache.DiskLruCache;
+import com.devlomi.record_view.OnRecordListener;
 import com.example.rbchat.Adapters.ListMessageAdapter;
 import com.example.rbchat.Adapters.MessageAdapter;
 
@@ -68,17 +54,19 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.database.annotations.NotNull;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.security.Permission;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 import static java.nio.file.Paths.get;
 ///1622978604000 14 june 2021
@@ -87,7 +75,7 @@ public class ChatActivity extends AppCompatActivity {
    public ActivityChatBinding binding;
     MessageAdapter adapter;
     ListMessageAdapter listadapter,list2adapter;
-    ArrayList<Message> messages;
+    ArrayList<Message> messages,unseenmessages;
     String senderRoom , receiverRoom;
     Message message;
     FirebaseDatabase database;
@@ -100,6 +88,11 @@ public class ChatActivity extends AppCompatActivity {
     String receiverUid;
     Uri Image_uri;
     ValueEventListener showmessagesinlistlistener;
+    String audioPath;
+
+    private MediaRecorder mediaRecorder;
+
+
 
     private static final int Permission_code=1001;
      private static final int  Request_code=1000;
@@ -112,6 +105,8 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+
 
         dialog = new ProgressDialog(this);
         dialog.setMessage("Uploading Image...");
@@ -170,10 +165,13 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        initView();
         senderRoom = senderUid + receiverUid;
         receiverRoom = receiverUid + senderUid ;
 
-        messages = new ArrayList<>();
+            messages = new ArrayList<>();
+
+            unseenmessages=new ArrayList<>();
 
       ///// list view changed
 
@@ -257,22 +255,25 @@ binding.listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         Log.e("itemclick",message.getMessage());
 
 
-        if(message.getMessage()=="photo") {
+        if(message.getType().equals("photo")) {
             Intent intent = new Intent(ChatActivity.this, Fullimages.class);
             intent.putExtra("url", message.getImageUrl());
             startActivity(intent);
-        }else if(message.getMessage().equals("video")){
+        }else if(message.getType().equals("video")){
 
             Intent intent=new Intent(ChatActivity.this, Videoview.class);
             intent.putExtra("url",message.getImageUrl());
             startActivity(intent);
 
-        }else{
+        }else if(message.getType().equals("location")){
             Intent intent=new Intent(ChatActivity.this,ShowLocation.class);
-            intent.putExtra("lat",message.getLatitude());
-            intent.putExtra("long",message.getLongitude());
+            intent.putExtra("lat",Double.parseDouble(message.getLatitude()));
+            intent.putExtra("long",Double.parseDouble(message.getLongitude()));
             startActivity(intent);
 
+        }else{
+
+            Log.e("type", "text");
         }
 
 
@@ -481,42 +482,44 @@ Message message= (Message) listadapter.getItem(position);
 
                 Date date = new Date();
                 Message message = new Message(messageTxt, senderUid, date.getTime());
-                message.setStatus("sent");
+         //       message.setStatus("sent");
                 binding.messageBox.setText("");
 
+                sendmessageindatabase(message);
 
-                String randomKey = database.getReference().push().getKey();
-
-                message.setMessageId(randomKey);
-
-                HashMap<String, Object> lastMsgObj = new HashMap<>();
-                lastMsgObj.put("lastMessage", message.getMessage());
-                lastMsgObj.put("lastMessageTime", date.getTime());
-
-                database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
-                database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
-
-                database.getReference().child("chats")
-                        .child(senderRoom)
-                        .child("messages")
-                        .child(randomKey)
-                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        database.getReference().child("chats")
-                                .child(receiverRoom)
-                                .child("messages")
-                                .child(randomKey)
-                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-
-
-
-}
-                        });
-                    }
-                });
+//
+//                String randomKey = database.getReference().push().getKey();
+//
+//                message.setMessageId(randomKey);
+//
+//                HashMap<String, Object> lastMsgObj = new HashMap<>();
+//                lastMsgObj.put("lastMessage", message.getMessage());
+//                lastMsgObj.put("lastMessageTime", date.getTime());
+//
+//                database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+//                database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+//
+//                database.getReference().child("chats")
+//                        .child(senderRoom)
+//                        .child("messages")
+//                        .child(randomKey)
+//                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void aVoid) {
+//                        database.getReference().child("chats")
+//                                .child(receiverRoom)
+//                                .child("messages")
+//                                .child(randomKey)
+//                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                            @Override
+//                            public void onSuccess(Void aVoid) {
+//
+//
+//
+//}
+//                        });
+//                    }
+//                });
 
 
                 binding.listview.post(new Runnable() {
@@ -644,6 +647,14 @@ Message message= (Message) listadapter.getItem(position);
 
             @Override
             public void afterTextChanged(Editable s) {
+
+             //   binding.sendBtn.setImageResource(R.drawable.ic_send);
+
+                if(binding.messageBox.getText().toString().isEmpty())
+                {binding.recordingLayout.setVisibility(View.VISIBLE);}
+                else
+                    binding.recordingLayout.setVisibility(View.GONE);
+
                 database.getReference().child("presence").child(senderUid).setValue("Typing...");
                 handler.removeCallbacksAndMessages(null);
                 handler.postDelayed(UserStoppedTyping,1000);
@@ -670,9 +681,12 @@ Message message= (Message) listadapter.getItem(position);
         showmessagesinlistlistener=new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 Date date=new Date();
                 messages.clear();
-
+                Message unreadmessage=new Message("Unread Messages","dummy",date.getTime());
+                unreadmessage.setStatus("sent");
+                unreadmessage.setType("unread");
 
                 for(DataSnapshot snapshot1 : snapshot.getChildren())
                 {
@@ -684,42 +698,27 @@ Message message= (Message) listadapter.getItem(position);
 
                             Log.e("seen","not null");
 
-                            if(!message.getStatus().equals("seen") && !message.getSenderId().equals(FirebaseAuth.getInstance().getUid())){
-                                Message unreadmessage=new Message("Unread Messages","dummy",date.getTime());
-                                unreadmessage.setStatus("seen");
-                                if(messages.contains(unreadmessage)){
+                            if(!message.getStatus().equals("seen") && !message.getSenderId().equals(FirebaseAuth.getInstance().getUid()) ){
 
+
+                                unseenmessages.add(message);
+
+                                if(messages.contains(unreadmessage)){}else {
                                     messages.add(unreadmessage);
-                                }else {}
+                                }
 
-
-
-
-
-                                Log.e("seen",message.getStatus());
+                                Log.e("seen705",message.getStatus());
                                 message.setStatus("seen");
 
-
-                                database.getReference().child("chats")
-                                        .child(senderRoom)
-                                        .child("messages")
-                                        .child(message.getMessageId()).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Log.e("seen",message.getStatus());
-                                    }
-                                });
-
-
-                                database.getReference().child("chats")
-                                        .child(receiverRoom)
-                                        .child("messages")
-                                        .child(message.getMessageId()).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Log.e("seen",message.getStatus());
-                                    }
-                                });
+                                    database.getReference().child("chats")
+                                            .child(receiverRoom)
+                                            .child("messages")
+                                            .child(message.getMessageId()).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Log.e("seen on receive success",message.getStatus());
+                                        }
+                                    });
 
                             }
                         }
@@ -732,18 +731,7 @@ Message message= (Message) listadapter.getItem(position);
 
 
 
-
-
-
-                //   adapter.notifyDataSetChanged();
-                //     binding.recyclerView.scrollToPosition(adapter.getItemCount()-1);
-
-
                 listadapter.notifyDataSetChanged();
-              //  list2adapter.notifyDataSetChanged();
-
-
-
 
             }
 
@@ -786,7 +774,7 @@ Message message= (Message) listadapter.getItem(position);
         Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
        // intent.setAction(Intent.ACTION_PICK);
    //     intent.putExtra(MediaStore.EXTRA_OUTPUT,Image_uri);
-        startActivityForResult(intent, 2);
+        startActivityForResult(intent, camera_image_code);
 
     }
 
@@ -840,38 +828,44 @@ Message message= (Message) listadapter.getItem(position);
                 Date date = new Date();
                 Message message = new Message(messageTxt, senderUid, date.getTime());
 
+                message.setType("location");
+
                 message.setMessage(longitude+","+latitude);
-                message.setStatus("sent");
+                //message.setStatus("sent");
                 binding.messageBox.setText("");
-                message.setLatitude(latitude);
-                message.setLongitude(longitude);
-                String randomKey = database.getReference().push().getKey();
+                message.setLatitude(latitude+"");
+                message.setLongitude(longitude+"");
 
-                HashMap<String, Object> lastMsgObj = new HashMap<>();
-                lastMsgObj.put("lastMessage", message.getMessage());
-                lastMsgObj.put("lastMessageTime", date.getTime());
+                sendmessageindatabase(message);
 
-                database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
-                database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
 
-                database.getReference().child("chats")
-                        .child(senderRoom)
-                        .child("messages")
-                        .child(randomKey)
-                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        database.getReference().child("chats")
-                                .child(receiverRoom)
-                                .child("messages")
-                                .child(randomKey)
-                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                            }
-                        });
-                    }
-                });
+//                String randomKey = database.getReference().push().getKey();
+//
+//                HashMap<String, Object> lastMsgObj = new HashMap<>();
+//                lastMsgObj.put("lastMessage", message.getMessage());
+//                lastMsgObj.put("lastMessageTime", date.getTime());
+//
+//                database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+//                database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+//
+//                database.getReference().child("chats")
+//                        .child(senderRoom)
+//                        .child("messages")
+//                        .child(randomKey)
+//                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void aVoid) {
+//                        database.getReference().child("chats")
+//                                .child(receiverRoom)
+//                                .child("messages")
+//                                .child(randomKey)
+//                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                            @Override
+//                            public void onSuccess(Void aVoid) {
+//                            }
+//                        });
+//                    }
+//                });
 
 
 
@@ -927,39 +921,42 @@ Message message= (Message) listadapter.getItem(position);
 
                                         String messageTxt = binding.messageBox.getText().toString();
                                         Date date = new Date();
-                                        Message message = new Message(messageTxt, senderUid, date.getTime());
-                                        message.setMessage("photo");
-                                        message.setStatus("sent");
+                                        Message message = new Message(messageTxt+" ", senderUid, date.getTime());
+                                        message.setType("photo");
+//                                        message.setMessage("photo");
+//                                        message.setStatus("sent");
                                         message.setImageUrl(filepath);
                                         binding.messageBox.setText("");
 
-                                        String randomKey = database.getReference().push().getKey();
+                                        sendmessageindatabase(message);
 
-                                        HashMap<String, Object> lastMsgObj = new HashMap<>();
-                                        lastMsgObj.put("lastMessage", message.getMessage());
-                                        lastMsgObj.put("lastMessageTime", date.getTime());
-
-                                        database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
-                                        database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
-
-                                        database.getReference().child("chats")
-                                                .child(senderRoom)
-                                                .child("messages")
-                                                .child(randomKey)
-                                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                database.getReference().child("chats")
-                                                        .child(receiverRoom)
-                                                        .child("messages")
-                                                        .child(randomKey)
-                                                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void aVoid) {
-                                                    }
-                                                });
-                                            }
-                                        });
+//                                        String randomKey = database.getReference().push().getKey();
+//
+//                                        HashMap<String, Object> lastMsgObj = new HashMap<>();
+//                                        lastMsgObj.put("lastMessage", message.getMessage());
+//                                        lastMsgObj.put("lastMessageTime", date.getTime());
+//
+//                                        database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+//                                        database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+//
+//                                        database.getReference().child("chats")
+//                                                .child(senderRoom)
+//                                                .child("messages")
+//                                                .child(randomKey)
+//                                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                            @Override
+//                                            public void onSuccess(Void aVoid) {
+//                                                database.getReference().child("chats")
+//                                                        .child(receiverRoom)
+//                                                        .child("messages")
+//                                                        .child(randomKey)
+//                                                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                    @Override
+//                                                    public void onSuccess(Void aVoid) {
+//                                                    }
+//                                                });
+//                                            }
+//                                        });
                                     }
                                 });
                             }
@@ -992,39 +989,41 @@ Message message= (Message) listadapter.getItem(position);
 
                                         String messageTxt = binding.messageBox.getText().toString();
                                         Date date = new Date();
-                                        Message message = new Message(messageTxt, senderUid, date.getTime());
-                                        message.setMessage("video");
-                                        message.setStatus("sent");
+                                        Message message = new Message(messageTxt+" ", senderUid, date.getTime());
+                                        message.setType("video");
+//                                        message.setMessage("video");
+//                                      message.setStatus("sent");
                                         message.setImageUrl(filepath);
                                         binding.messageBox.setText("");
 
-                                        String randomKey = database.getReference().push().getKey();
-
-                                        HashMap<String, Object> lastMsgObj = new HashMap<>();
-                                        lastMsgObj.put("lastMessage", message.getMessage());
-                                        lastMsgObj.put("lastMessageTime", date.getTime());
-
-                                        database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
-                                        database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
-
-                                        database.getReference().child("chats")
-                                                .child(senderRoom)
-                                                .child("messages")
-                                                .child(randomKey)
-                                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                database.getReference().child("chats")
-                                                        .child(receiverRoom)
-                                                        .child("messages")
-                                                        .child(randomKey)
-                                                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void aVoid) {
-                                                    }
-                                                });
-                                            }
-                                        });
+                                        sendmessageindatabase(message);
+//                                        String randomKey = database.getReference().push().getKey();
+//
+//                                        HashMap<String, Object> lastMsgObj = new HashMap<>();
+//                                        lastMsgObj.put("lastMessage", message.getMessage());
+//                                        lastMsgObj.put("lastMessageTime", date.getTime());
+//
+//                                        database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+//                                        database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+//
+//                                        database.getReference().child("chats")
+//                                                .child(senderRoom)
+//                                                .child("messages")
+//                                                .child(randomKey)
+//                                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                            @Override
+//                                            public void onSuccess(Void aVoid) {
+//                                                database.getReference().child("chats")
+//                                                        .child(receiverRoom)
+//                                                        .child("messages")
+//                                                        .child(randomKey)
+//                                                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                    @Override
+//                                                    public void onSuccess(Void aVoid) {
+//                                                    }
+//                                                });
+//                                            }
+//                                        });
                                     }
                                 });
                             }
@@ -1059,39 +1058,41 @@ Message message= (Message) listadapter.getItem(position);
 
                                 String messageTxt = binding.messageBox.getText().toString();
                                 Date date = new Date();
-                                Message message = new Message(messageTxt, senderUid, date.getTime());
-                                message.setMessage("photo");
-                                message.setStatus("sent");
+                                Message message = new Message(messageTxt+" ", senderUid, date.getTime());
+                                message.setType("photo");
                                 message.setImageUrl(filepath);
                                 binding.messageBox.setText("");
 
-                                String randomKey = database.getReference().push().getKey();
 
-                                HashMap<String, Object> lastMsgObj = new HashMap<>();
-                                lastMsgObj.put("lastMessage", message.getMessage());
-                                lastMsgObj.put("lastMessageTime", date.getTime());
+                                sendmessageindatabase(message);
 
-                                database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
-                                database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
-
-                                database.getReference().child("chats")
-                                        .child(senderRoom)
-                                        .child("messages")
-                                        .child(randomKey)
-                                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        database.getReference().child("chats")
-                                                .child(receiverRoom)
-                                                .child("messages")
-                                                .child(randomKey)
-                                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                            }
-                                        });
-                                    }
-                                });
+//                                String randomKey = database.getReference().push().getKey();
+//
+//                                HashMap<String, Object> lastMsgObj = new HashMap<>();
+//                                lastMsgObj.put("lastMessage", message.getMessage());
+//                                lastMsgObj.put("lastMessageTime", date.getTime());
+//
+//                                database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+//                                database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+//
+//                                database.getReference().child("chats")
+//                                        .child(senderRoom)
+//                                        .child("messages")
+//                                        .child(randomKey)
+//                                        .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                    @Override
+//                                    public void onSuccess(Void aVoid) {
+//                                        database.getReference().child("chats")
+//                                                .child(receiverRoom)
+//                                                .child("messages")
+//                                                .child(randomKey)
+//                                                .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                            @Override
+//                                            public void onSuccess(Void aVoid) {
+//                                            }
+//                                        });
+//                                    }
+//                                });
                             }
                         });
                     }
@@ -1146,38 +1147,41 @@ Message message= (Message) listadapter.getItem(position);
             Date date = new Date();
             String messageTxt=contactName+"\n"+contactNumber;
             Message message = new Message(messageTxt, senderUid, date.getTime());
-            message.setStatus("sent");
-            String randomKey = database.getReference().push().getKey();
-            message.setMessageId(randomKey);
-            HashMap<String, Object> lastMsgObj = new HashMap<>();
-            lastMsgObj.put("lastMessage", message.getMessage());
+            message.setType("contact");
+            sendmessageindatabase(message);
 
-            lastMsgObj.put("lastMessageTime", date.getTime());
-
-            database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
-            database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
-
-            database.getReference().child("chats")
-                    .child(senderRoom)
-                    .child("messages")
-                    .child(randomKey)
-                    .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    database.getReference().child("chats")
-                            .child(receiverRoom)
-                            .child("messages")
-                            .child(randomKey)
-                            .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-
-
-
-                        }
-                    });
-                }
-            });
+//
+//            String randomKey = database.getReference().push().getKey();
+//            message.setMessageId(randomKey);
+//            HashMap<String, Object> lastMsgObj = new HashMap<>();
+//            lastMsgObj.put("lastMessage", message.getMessage());
+//
+//            lastMsgObj.put("lastMessageTime", date.getTime());
+//
+//            database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+//            database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+//
+//            database.getReference().child("chats")
+//                    .child(senderRoom)
+//                    .child("messages")
+//                    .child(randomKey)
+//                    .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                @Override
+//                public void onSuccess(Void aVoid) {
+//                    database.getReference().child("chats")
+//                            .child(receiverRoom)
+//                            .child("messages")
+//                            .child(randomKey)
+//                            .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//
+//
+//
+//                        }
+//                    });
+//                }
+//            });
 
         }
 
@@ -1193,17 +1197,155 @@ Message message= (Message) listadapter.getItem(position);
     }
     String currentId = FirebaseAuth.getInstance().getUid();
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String currentId = FirebaseAuth.getInstance().getUid();
-        try {
-            database.getReference().child("presence").child(currentId).setValue("Online");
-        }
-        catch(Exception e) {
-            Log.e(this.getClass().getSimpleName()+" OnResume: ",e.getMessage());
-        }
+
+    private void initView()
+    {
+        binding.recordBtn.setRecordView(binding.recordView);
+        binding.recordBtn.setListenForRecord(false);
+
+
+        binding.recordBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                binding.cancelRecording.setVisibility(View.VISIBLE);
+                binding.messageLayout.setVisibility(View.GONE);
+                binding.recordBtn.setListenForRecord(true);
+
+            }
+        });
+
+
+
+        binding.recordView.setOnRecordListener(new OnRecordListener() {
+            @Override
+            public void onStart() {
+                //Start Recording..
+                Log.d("RecordView", "onStart");
+
+                setupRecording();
+
+                try {
+                    mediaRecorder.prepare();
+                    mediaRecorder.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                binding.messageLayout.setVisibility(View.GONE);
+                binding.recordingLayout.setVisibility(View.VISIBLE);
+
+            }
+
+            @Override
+            public void onCancel() {
+                //On Swipe To Cancel
+                Log.d("RecordView", "onCancel");
+                mediaRecorder.reset();
+                mediaRecorder.release();
+                File file = new File(audioPath);
+                if(file.exists())
+                    file.delete();
+                binding.recordingLayout.setVisibility(View.GONE);
+                binding.messageLayout.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onFinish(long recordTime) {
+                try {
+
+                    sendRecordingMessage(audioPath);
+
+
+                    try{
+                        mediaRecorder.stop();
+                    }
+                    catch (Exception E) {
+                        Log.e ("onFinish", "o");
+                    }
+
+
+
+                    mediaRecorder.release();
+                }
+                catch (Exception E) {
+                    Log.e ("onFinish", "onnnnnnnn");
+                }
+                binding.recordingLayout.setVisibility(View.GONE);
+                binding.messageLayout.setVisibility(View.VISIBLE);
+//                sendRecordingMessage(audioPath);
+         //       binding.sendBtn.setVisibility(View.VISIBLE);
+            }
+
+
+            @Override
+            public void onLessThanSecond() {
+                //When the record time is less than One Second
+                Log.d("RecordView", "onLessThanSecond");
+
+
+                File file = new File(audioPath);
+                if(file.exists())
+                    file.delete();
+
+                mediaRecorder.reset();
+                mediaRecorder.release();
+
+                binding.recordingLayout.setVisibility(View.GONE);
+                binding.messageLayout.setVisibility(View.VISIBLE);
+            }
+        });
     }
+
+    private void setupRecording() {
+        Log.d("SetupRecording", "Recording Started");
+        mediaRecorder = new MediaRecorder();
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
+
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "RB-Chat/Media/Recording");
+
+        if (!file.exists()){
+            file.mkdirs();
+            Log.e("file ","file do not exist");
+        }else{Log.e("file ","file exist");}
+
+        audioPath = file.getAbsolutePath() + File.separator + System.currentTimeMillis() + ".3gp";
+        Log.e("file ","file do not exist"+audioPath);
+        mediaRecorder.setOutputFile(audioPath);
+
+    }
+
+    private void sendRecordingMessage (String audioPath){
+
+        Calendar calendar = Calendar.getInstance();
+        StorageReference reference = storage.getReference().child("Media").child("recording").child(calendar.getTimeInMillis()+ "");
+
+        Uri audioFile = Uri.fromFile(new File(audioPath));
+        reference.putFile(audioFile).addOnSuccessListener(success->{
+            Task<Uri> audioUrl = success.getStorage().getDownloadUrl();
+
+            audioUrl.addOnCompleteListener(path->{
+                if (path.isSuccessful())
+                {
+                    String url = path.getResult().toString();
+                    Log.e("audioURL", url);
+
+                    Date date = new Date();
+
+                    Message message = new Message("voice", senderUid, date.getTime());
+                    message.setImageUrl(url);
+                    message.setType("voicemessage");
+
+sendmessageindatabase(message);
+                }else Log.e("audionull","null");
+            });
+        });
+    }
+
+
+
+
 
 
     @Override
@@ -1219,13 +1361,28 @@ Message message= (Message) listadapter.getItem(position);
     protected void onPause() {
         super.onPause();
 
-        String currentId = FirebaseAuth.getInstance().getUid();
-        try {
-            Date date=new Date();
-            database.getReference().child("presence").child(currentId).setValue(date.getTime()+"");
-        }
-        catch(Exception e) {
-            Log.e(this.getClass().getSimpleName()+" OnPause: ",e.getMessage());
+seenmessagesinsenderroom();
+
+    }
+
+    private void seenmessagesinsenderroom() {
+        for (Message message:unseenmessages
+        ) {
+
+
+            database.getReference().child("chats")
+                    .child(senderRoom)
+                    .child("messages")
+                    .child(message.getMessageId()).setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.e("seen on receive success",message.getStatus());
+                }
+            });
+
+
+
+
         }
 
     }
@@ -1275,6 +1432,114 @@ Message message= (Message) listadapter.getItem(position);
     }
 
 
+
+void sendmessageindatabase(Message message){
+    Date date=new Date();
+        String randomKey = database.getReference().push().getKey();
+    message.setMessageId(randomKey);
+    HashMap<String, Object> lastMsgObj = new HashMap<>();
+    lastMsgObj.put("lastMessage", message.getMessage());
+
+    lastMsgObj.put("lastMessageTime", date.getTime());
+
+    database.getReference().child("chats").child(senderRoom).updateChildren(lastMsgObj);
+    database.getReference().child("chats").child(receiverRoom).updateChildren(lastMsgObj);
+
+    database.getReference().child("chats")
+            .child(senderRoom)
+            .child("messages")
+            .child(randomKey)
+            .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+        @Override
+        public void onSuccess(Void aVoid) {
+//            message.setStatus("seen");
+            database.getReference().child("chats")
+                    .child(receiverRoom)
+                    .child("messages")
+                    .child(randomKey)
+                    .setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) { }
+            });
+        }
+    });
+
+
+
+
+
+}
+String getmimetype(Uri uri){
+      //  Uri uri=Uri.parse(url);
+    ContentResolver resolver=getContentResolver();
+    MimeTypeMap mimeTypeMap=MimeTypeMap.getSingleton();
+   return mimeTypeMap.getExtensionFromMimeType(resolver.getType(uri));
+
+
+    }
+
+
+
+
+public void downloadtodevice(String url, String type){  ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.INTERNET,Manifest.permission.ACCESS_NETWORK_STATE},1);
+    Uri uri=Uri.parse(url);
+    DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+    DownloadManager.Request request = new DownloadManager.Request(uri);
+    request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI |
+            DownloadManager.Request.NETWORK_MOBILE);
+
+
+
+    request.setTitle("Downloading Content");
+    request.setDescription("downloading.....");
+    request.allowScanningByMediaScanner();
+    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+
+    Date date= new Date();
+    int i=0;
+
+    String currentdate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+Log.e("current date",currentdate);
+
+    switch(type){ case "photo":
+        
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,"/RBCHAT/"+"/Pictures/"+"IMG-"+currentdate+"-WA"+(i++));
+
+        break;
+        case "video":
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,"/RBCHAT/"+"/Videos/"+"VID-"+currentdate+"-WA"+(i++));
+
+
+            break;
+        default:
+
+
+    };
+
+
+
+
+    request.setMimeType(getmimetype(uri));
+    downloadManager.enqueue(request);
+
+}
+
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        database.getReference().child("chats")
+                .child(senderRoom)
+                .child("messages")
+                .addValueEventListener(showmessagesinlistlistener);
+
+        if (currentId != null)
+        {
+            database.getReference().child("presence").child(currentId).setValue("Online");
+        }
+    }
 
 
 

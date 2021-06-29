@@ -8,6 +8,41 @@ private String messageId;
     private String senderId;
     private String imageUrl;
 
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
+    }
+
+    private String latitude;
+    private String type="text";
+   private String longitude;
+    private String status="sent";
+    private long timestamp;
+    private int feeling = -1;
+
+
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+
+
     public String getStatus() {
         return status;
     }
@@ -15,27 +50,11 @@ private String messageId;
     public void setStatus(String status) {
         this.status = status;
     }
-    public double getLongitude() {
-        return longitude;
-    }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
 
-    public double getLatitude() {
-        return latitude;
-    }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
 
-    double longitude,latitude;
 
-    private String status;
-private long timestamp;
-private int feeling = -1;
 
 
      public Message ()
